@@ -1,10 +1,6 @@
 package com.example.todofy.data.model
 
 import androidx.compose.ui.graphics.Color
-import com.example.todofy.ui.theme.Blue
-import com.example.todofy.ui.theme.Green
-import com.example.todofy.ui.theme.Orange
-import com.example.todofy.ui.theme.Purple
 
 data class TodoCategory(
     val id: Int = 0,
@@ -12,10 +8,10 @@ data class TodoCategory(
     val color: Color
 )
 
-// Kategori default untuk ToDo
+// Prioritas default untuk ToDo dengan warna yang jelas
 val defaultCategories = listOf(
-    TodoCategory(1, "Pekerjaan", Blue),
-    TodoCategory(2, "Pribadi", Purple),
-    TodoCategory(3, "Belanja", Orange),
-    TodoCategory(4, "Penting", Green)
+    TodoCategory(1, "Sangat Rendah", Color(0xFF4CAF50)), // Green
+    TodoCategory(2, "Rendah", Color(0xFF2196F3)),        // Blue
+    TodoCategory(3, "Tinggi", Color(0xFFFF9800)),        // Orange
+    TodoCategory(4, "Sangat Tinggi", Color(0xFFF44336))  // Red
 )

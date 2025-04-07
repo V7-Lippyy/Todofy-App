@@ -21,7 +21,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.todofy.data.local.entity.CategoryEntity
-import com.example.todofy.utils.Converters
+import com.example.todofy.ui.theme.Blue
+import com.example.todofy.ui.theme.Green
+import com.example.todofy.ui.theme.Orange
+import com.example.todofy.ui.theme.Red
 
 @Composable
 fun CategoryChip(
@@ -30,40 +33,52 @@ fun CategoryChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val converters = Converters()
-    val categoryColor = converters.toColor(category.colorHex)
+    // Gunakan warna langsung berdasarkan nama kategori
+    val categoryColor = when (category.name) {
+        "Sangat Rendah" -> Green
+        "Rendah" -> Blue
+        "Tinggi" -> Orange
+        "Sangat Tinggi" -> Red
+        else -> MaterialTheme.colorScheme.primary
+    }
 
     Surface(
-        modifier = modifier
-            .clickable { onClick() },
+        modifier = modifier.clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
-        color = if (isSelected) categoryColor.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surface,
-        tonalElevation = if (isSelected) 0.dp else 4.dp,
-        shadowElevation = if (isSelected) 0.dp else 2.dp,
+        color = if (isSelected) {
+            categoryColor.copy(alpha = 0.2f)
+        } else {
+            MaterialTheme.colorScheme.surfaceVariant
+        }
     ) {
         Row(
             modifier = Modifier
-                .padding(horizontal = 12.dp, vertical = 6.dp)
+                .padding(horizontal = 12.dp, vertical = 8.dp)
                 .border(
-                    width = 1.dp,
+                    width = if (isSelected) 2.dp else 0.dp,
                     color = if (isSelected) categoryColor else Color.Transparent,
                     shape = RoundedCornerShape(16.dp)
                 ),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Indikator warna prioritas
             Box(
                 modifier = Modifier
-                    .size(8.dp)
+                    .size(12.dp)
                     .clip(CircleShape)
                     .background(categoryColor)
             )
 
-            Spacer(modifier = Modifier.width(6.dp))
+            Spacer(modifier = Modifier.width(8.dp))
 
             Text(
                 text = category.name,
                 style = MaterialTheme.typography.labelMedium,
-                color = if (isSelected) categoryColor else MaterialTheme.colorScheme.onSurface
+                color = if (isSelected) {
+                    categoryColor
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                }
             )
         }
     }

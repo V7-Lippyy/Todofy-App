@@ -12,7 +12,9 @@ data class TodoEntity(
     val description: String,
     val categoryId: Int,
     val isCompleted: Boolean = false,
-    val dueDate: Date? = null,
+    val startDate: Date? = null,       // Tanggal mulai (opsional)
+    val dueDate: Date? = null,         // Tanggal tenggat
+    val hasTime: Boolean = false,      // Flag apakah waktu (jam & menit) diatur
     val createdAt: Date = Date(),
     val updatedAt: Date = Date()
 )

@@ -38,6 +38,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -49,6 +50,10 @@ import com.example.todofy.ui.components.OverdueTasksCard
 import com.example.todofy.ui.components.PendingTasksCard
 import com.example.todofy.ui.components.SearchBar
 import com.example.todofy.ui.components.SwipeableTodoItem
+import com.example.todofy.ui.theme.Blue
+import com.example.todofy.ui.theme.Green
+import com.example.todofy.ui.theme.Orange
+import com.example.todofy.ui.theme.Red
 import com.example.todofy.utils.Converters
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -125,20 +130,20 @@ fun HomeScreen(
                         .padding(horizontal = 16.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Opsi "Semua" untuk menampilkan seluruh todo
+                    // Opsi "Semua Prioritas"
                     item {
                         CategoryChip(
                             category = CategoryEntity(
                                 id = 0,
-                                name = "Semua",
-                                colorHex = "#000000"
+                                name = "Semua Prioritas",
+                                colorHex = "#757575" // Grey color
                             ),
                             isSelected = selectedCategoryId == null,
                             onClick = { viewModel.selectCategory(null) }
                         )
                     }
 
-                    // Menampilkan seluruh kategori
+                    // Menampilkan seluruh prioritas
                     items(categories) { category ->
                         CategoryChip(
                             category = category,
@@ -179,14 +184,15 @@ fun HomeScreen(
                             }
                         )
 
-                        // Mencari kategori untuk mendapatkan warna
-                        val categoryColor = categories.find { it.id == todo.categoryId }?.let {
-                            converters.toColor(it.colorHex)
-                        } ?: MaterialTheme.colorScheme.primary
+                        // Mencari kategori untuk mendapatkan warna dan nama
+                        val category = categories.find { it.id == todo.categoryId }
+                        val categoryColor = MaterialTheme.colorScheme.primary // Default color
+                        val categoryName = category?.name ?: "Rendah" // Default name
 
                         SwipeableTodoItem(
                             todo = todo,
                             categoryColor = categoryColor,
+                            categoryName = categoryName,
                             onCheckedChange = { viewModel.toggleTodoCompletion(it) },
                             onEditClick = { onNavigateToEditTodo(it.id) },
                             onDeleteClick = { viewModel.deleteTodo(it) },

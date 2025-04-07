@@ -27,8 +27,12 @@ class Converters {
     @TypeConverter
     fun toColor(colorString: String): Color {
         return try {
+            // Untuk debugging
+            // println("Converting color string: $colorString")
             Color(android.graphics.Color.parseColor(colorString))
         } catch (e: Exception) {
+            // Untuk debugging
+            // println("Error converting color: ${e.message}")
             Color.Gray
         }
     }

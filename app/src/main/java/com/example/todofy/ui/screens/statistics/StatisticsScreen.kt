@@ -149,7 +149,7 @@ fun StatisticsScreen(
                         modifier = Modifier.padding(16.dp)
                     ) {
                         Text(
-                            text = "Kategori",
+                            text = "Prioritas Tugas",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )

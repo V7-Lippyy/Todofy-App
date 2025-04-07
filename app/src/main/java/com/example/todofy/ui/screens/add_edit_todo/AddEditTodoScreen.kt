@@ -1,5 +1,7 @@
 package com.example.todofy.ui.screens.add_edit_todo
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,13 +10,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -28,24 +34,24 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.todofy.data.local.entity.CategoryEntity
 import com.example.todofy.ui.components.CategoryChip
+import com.example.todofy.utils.calculateRemainingTime
 import com.example.todofy.utils.formatToDisplayDate
-import com.vanpra.composematerialdialogs.MaterialDialog
-import com.vanpra.composematerialdialogs.datetime.date.datepicker
-import com.vanpra.composematerialdialogs.rememberMaterialDialogState
+import com.example.todofy.utils.formatToDisplayDateTime
+import com.example.todofy.utils.formatToDisplayTime
 import kotlinx.coroutines.flow.collect
-import java.time.LocalDate
-import java.time.ZoneId
+import java.util.Calendar
 import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -56,7 +62,14 @@ fun AddEditTodoScreen(
 ) {
     val categories by viewModel.categories.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-    val dateDialogState = rememberMaterialDialogState()
+    val context = LocalContext.current
+
+    // Menghitung estimasi waktu tersisa
+    val remainingTime by remember(viewModel.startDate, viewModel.dueDate) {
+        derivedStateOf {
+            calculateRemainingTime(viewModel.startDate, viewModel.dueDate)
+        }
+    }
 
     LaunchedEffect(key1 = true) {
         viewModel.uiEvent.collect { event ->
@@ -70,6 +83,35 @@ fun AddEditTodoScreen(
             }
         }
     }
+
+    // Date Picker setup
+    val calendar = Calendar.getInstance()
+
+    val startDatePickerDialog = DatePickerDialog(
+        context,
+        { _, year, month, dayOfMonth ->
+            calendar.set(Calendar.YEAR, year)
+            calendar.set(Calendar.MONTH, month)
+            calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+            viewModel.onEvent(AddEditTodoEvent.OnStartDateChange(calendar.time))
+        },
+        calendar.get(Calendar.YEAR),
+        calendar.get(Calendar.MONTH),
+        calendar.get(Calendar.DAY_OF_MONTH)
+    )
+
+    val dueDatePickerDialog = DatePickerDialog(
+        context,
+        { _, year, month, dayOfMonth ->
+            calendar.set(Calendar.YEAR, year)
+            calendar.set(Calendar.MONTH, month)
+            calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+            viewModel.onEvent(AddEditTodoEvent.OnDueDateChange(calendar.time))
+        },
+        calendar.get(Calendar.YEAR),
+        calendar.get(Calendar.MONTH),
+        calendar.get(Calendar.DAY_OF_MONTH)
+    )
 
     Scaffold(
         topBar = {
@@ -127,9 +169,9 @@ fun AddEditTodoScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Pilihan Kategori
+            // Pilihan Prioritas
             Text(
-                text = "Kategori",
+                text = "Prioritas",
                 style = MaterialTheme.typography.bodyLarge
             )
 
@@ -137,7 +179,9 @@ fun AddEditTodoScreen(
 
             if (categories.isNotEmpty()) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     categories.forEach { category ->
@@ -150,47 +194,151 @@ fun AddEditTodoScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Tanggal Batas Waktu
+            // Checkbox untuk set waktu (jam & menit)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Checkbox(
+                    checked = viewModel.hasTime,
+                    onCheckedChange = {
+                        viewModel.onEvent(AddEditTodoEvent.OnHasTimeChange(it))
+                    }
+                )
+                Text(
+                    text = "Sertakan waktu (jam & menit)",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Tanggal & Waktu Mulai
+            Text(
+                text = "Tanggal Mulai",
+                style = MaterialTheme.typography.bodyLarge
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "Batas Waktu",
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.weight(1f)
-                )
-
                 Button(
-                    onClick = { dateDialogState.show() }
+                    onClick = { startDatePickerDialog.show() },
+                    modifier = Modifier.weight(1f)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.CalendarToday,
-                        contentDescription = "Pilih Tanggal"
+                        imageVector = Icons.Default.PlayArrow,
+                        contentDescription = "Pilih Tanggal Mulai"
                     )
-                    Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = viewModel.dueDate?.formatToDisplayDate() ?: "Pilih Tanggal"
+                        text = viewModel.startDate?.formatToDisplayDate() ?: "Pilih Tanggal"
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                // Tombol Time Picker untuk tanggal mulai (hanya muncul jika hasTime = true)
+                if (viewModel.hasTime && viewModel.startDate != null) {
+                    IconButton(
+                        onClick = {
+                            val cal = Calendar.getInstance().apply { time = viewModel.startDate!! }
+                            TimePickerDialog(
+                                context,
+                                { _, hourOfDay, minute ->
+                                    viewModel.onEvent(AddEditTodoEvent.OnTimeChange(hourOfDay, minute, true))
+                                },
+                                cal.get(Calendar.HOUR_OF_DAY),
+                                cal.get(Calendar.MINUTE),
+                                true
+                            ).show()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Schedule,
+                            contentDescription = "Set Waktu Mulai"
+                        )
+                    }
+
+                    Text(
+                        text = viewModel.startDate?.formatToDisplayTime() ?: "--:--",
+                        style = MaterialTheme.typography.bodyMedium
                     )
                 }
             }
 
-            // Dialog pemilih tanggal
-            MaterialDialog(
-                dialogState = dateDialogState,
-                buttons = {
-                    positiveButton("OK")
-                    negativeButton("Batal")
-                }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Tanggal & Waktu Batas
+            Text(
+                text = "Batas Waktu",
+                style = MaterialTheme.typography.bodyLarge
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                datepicker { date ->
-                    val selectedDate = Date.from(
-                        date.atStartOfDay(ZoneId.systemDefault()).toInstant()
+                Button(
+                    onClick = { dueDatePickerDialog.show() },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CalendarToday,
+                        contentDescription = "Pilih Tanggal Batas"
                     )
-                    viewModel.onEvent(AddEditTodoEvent.OnDueDateChange(selectedDate))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = viewModel.dueDate?.formatToDisplayDate() ?: "Pilih Tanggal"
+                    )
                 }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                // Tombol Time Picker untuk tenggat (hanya muncul jika hasTime = true)
+                if (viewModel.hasTime && viewModel.dueDate != null) {
+                    IconButton(
+                        onClick = {
+                            val cal = Calendar.getInstance().apply { time = viewModel.dueDate!! }
+                            TimePickerDialog(
+                                context,
+                                { _, hourOfDay, minute ->
+                                    viewModel.onEvent(AddEditTodoEvent.OnTimeChange(hourOfDay, minute, false))
+                                },
+                                cal.get(Calendar.HOUR_OF_DAY),
+                                cal.get(Calendar.MINUTE),
+                                true
+                            ).show()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Schedule,
+                            contentDescription = "Set Waktu Tenggat"
+                        )
+                    }
+
+                    Text(
+                        text = viewModel.dueDate?.formatToDisplayTime() ?: "--:--",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+
+            // Tampilkan estimasi waktu
+            if (viewModel.startDate != null && viewModel.dueDate != null) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Estimasi waktu: $remainingTime",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
             }
         }
     }

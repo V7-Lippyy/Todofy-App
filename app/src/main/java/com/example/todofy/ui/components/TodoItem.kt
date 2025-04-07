@@ -1,6 +1,5 @@
 package com.example.todofy.ui.components
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -12,13 +11,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -41,7 +40,13 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.todofy.data.local.entity.TodoEntity
+import com.example.todofy.ui.theme.Blue
+import com.example.todofy.ui.theme.Green
+import com.example.todofy.ui.theme.Orange
+import com.example.todofy.ui.theme.Red
+import com.example.todofy.utils.calculateRemainingTime
 import com.example.todofy.utils.formatToDisplayDate
+import com.example.todofy.utils.formatToDisplayDateTime
 import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,11 +54,21 @@ import java.util.Date
 fun TodoItem(
     todo: TodoEntity,
     categoryColor: Color,
+    categoryName: String,
     onCheckedChange: (TodoEntity) -> Unit,
     onEditClick: (TodoEntity) -> Unit,
     onDeleteClick: (TodoEntity) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // Gunakan warna langsung berdasarkan nama kategori
+    val priorityColor = when (categoryName) {
+        "Sangat Rendah" -> Green
+        "Rendah" -> Blue
+        "Tinggi" -> Orange
+        "Sangat Tinggi" -> Red
+        else -> categoryColor // Fallback ke warna yang diberikan
+    }
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -65,18 +80,19 @@ fun TodoItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(start = 4.dp, top = 12.dp, end = 12.dp, bottom = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Kategori indikator
+            // Indikator prioritas
             Box(
                 modifier = Modifier
-                    .size(16.dp)
+                    .size(24.dp)
+                    .padding(4.dp)
                     .clip(CircleShape)
-                    .background(categoryColor)
+                    .background(priorityColor)
             )
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(8.dp))
 
             // Isi Todo
             Column(
@@ -100,19 +116,49 @@ fun TodoItem(
                     )
                 }
 
+                // Tanggal mulai jika ada
+                todo.startDate?.let { startDate ->
+                    if (todo.dueDate == null || startDate.time != todo.dueDate.time) { // Tampilkan hanya jika berbeda dengan tenggat
+                        Spacer(modifier = Modifier.height(4.dp))
+                        val displayDate = if (todo.hasTime) startDate.formatToDisplayDateTime() else startDate.formatToDisplayDate()
+                        Text(
+                            text = "Mulai: $displayDate",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        )
+                    }
+                }
+
                 // Tanggal jatuh tempo
-                todo.dueDate?.let { date ->
+                todo.dueDate?.let { dueDate ->
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        val isTerlambat = dueDate.before(Date()) && !todo.isCompleted
+                        val displayDate = if (todo.hasTime) dueDate.formatToDisplayDateTime() else dueDate.formatToDisplayDate()
+
                         Text(
-                            text = "Batas: ${date.formatToDisplayDate()}",
+                            text = "Batas: $displayDate",
                             style = MaterialTheme.typography.labelSmall,
-                            color = if (date.before(Date()) && !todo.isCompleted)
+                            color = if (isTerlambat)
                                 MaterialTheme.colorScheme.error
                             else
                                 MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        )
+                    }
+
+                    // Tampilkan estimasi waktu atau status
+                    if (!todo.isCompleted) {
+                        Spacer(modifier = Modifier.height(2.dp))
+                        val remainingTime = calculateRemainingTime(todo.startDate ?: Date(), dueDate)
+                        Text(
+                            text = remainingTime,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = if (remainingTime == "Terlambat!")
+                                MaterialTheme.colorScheme.error
+                            else
+                                MaterialTheme.colorScheme.primary
                         )
                     }
                 }
@@ -132,6 +178,7 @@ fun TodoItem(
 fun SwipeableTodoItem(
     todo: TodoEntity,
     categoryColor: Color,
+    categoryName: String,
     onCheckedChange: (TodoEntity) -> Unit,
     onEditClick: (TodoEntity) -> Unit,
     onDeleteClick: (TodoEntity) -> Unit,
@@ -165,7 +212,7 @@ fun SwipeableTodoItem(
             Box(
                 Modifier
                     .fillMaxSize()
-                    .background(color)
+                    .background(color) // Use the animated color directly
                     .padding(horizontal = 20.dp),
                 contentAlignment = alignment
             ) {
@@ -180,6 +227,7 @@ fun SwipeableTodoItem(
             TodoItem(
                 todo = todo,
                 categoryColor = categoryColor,
+                categoryName = categoryName,
                 onCheckedChange = onCheckedChange,
                 onEditClick = onEditClick,
                 onDeleteClick = onDeleteClick

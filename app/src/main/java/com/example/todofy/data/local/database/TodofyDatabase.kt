@@ -16,7 +16,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@Database(entities = [TodoEntity::class, CategoryEntity::class], version = 1, exportSchema = false)
+@Database(entities = [TodoEntity::class, CategoryEntity::class], version = 2, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class TodofyDatabase : RoomDatabase() {
 
@@ -34,10 +34,10 @@ abstract class TodofyDatabase : RoomDatabase() {
                     TodofyDatabase::class.java,
                     "todofy_database"
                 )
+                    .fallbackToDestructiveMigration() // 👈 ini bagian penting
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {
                             super.onCreate(db)
-                            // Menambahkan kategori default saat database pertama kali dibuat
                             INSTANCE?.let { database ->
                                 CoroutineScope(Dispatchers.IO).launch {
                                     insertDefaultCategories(database.categoryDao())
@@ -54,11 +54,13 @@ abstract class TodofyDatabase : RoomDatabase() {
         // Fungsi untuk menambahkan kategori default
         private suspend fun insertDefaultCategories(categoryDao: CategoryDao) {
             defaultCategories.forEach { category ->
+                val colorHex = String.format("#%06X", 0xFFFFFF and category.color.value.toInt())
+                println("Inserting category: ${category.name}, Color HEX: $colorHex")
                 categoryDao.insertCategory(
                     CategoryEntity(
                         id = category.id,
                         name = category.name,
-                        colorHex = String.format("#%06X", 0xFFFFFF and category.color.value.toInt())
+                        colorHex = colorHex
                     )
                 )
             }
