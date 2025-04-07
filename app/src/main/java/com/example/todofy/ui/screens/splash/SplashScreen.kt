@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -48,6 +49,9 @@ fun SplashScreen(
 
 @Composable
 fun Splash(alpha: Float) {
+    val isDarkTheme = isSystemInDarkTheme()
+    val logoResId = if (isDarkTheme) R.drawable.dark_logo else R.drawable.light_logo
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -60,7 +64,7 @@ fun Splash(alpha: Float) {
         ) {
             // Logo di tengah
             Image(
-                painter = painterResource(id = R.drawable.logo),
+                painter = painterResource(id = logoResId),
                 contentDescription = "Logo TodoFy",
                 modifier = Modifier.size(200.dp)
             )
