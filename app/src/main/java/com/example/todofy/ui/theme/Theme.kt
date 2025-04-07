@@ -16,27 +16,27 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-// Light Theme Colors
+// Light Theme Colors - Skema warna modern dengan aksen yang lebih cerah
 private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFF1976D2),          // Blue primary
+    primary = Color(0xFF6200EE),          // Ungu utama yang lebih cerah
     onPrimary = Color.White,
-    primaryContainer = Color(0xFFD1E4FF),  // Light blue container
-    onPrimaryContainer = Color(0xFF0A2744),
+    primaryContainer = Color(0xFFEADDFF),  // Container ungu yang lembut
+    onPrimaryContainer = Color(0xFF21005E),
 
-    secondary = Color(0xFF00796B),        // Teal secondary
-    onSecondary = Color.White,
-    secondaryContainer = Color(0xFFB2DFDB), // Light teal container
-    onSecondaryContainer = Color(0xFF002B25),
+    secondary = Color(0xFF03DAC6),        // Teal mencolok
+    onSecondary = Color.Black,
+    secondaryContainer = Color(0xFFCEFAF8), // Container teal yang lembut
+    onSecondaryContainer = Color(0xFF00413F),
 
-    tertiary = Color(0xFF7B1FA2),         // Purple tertiary
-    onTertiary = Color.White,
-    tertiaryContainer = Color(0xFFE1BEE7), // Light purple container
-    onTertiaryContainer = Color(0xFF3F0053),
+    tertiary = Color(0xFFFF8F00),         // Aksen oranye yang hangat
+    onTertiary = Color.Black,
+    tertiaryContainer = Color(0xFFFFE0B2), // Container oranye yang lembut
+    onTertiaryContainer = Color(0xFF502900),
 
-    error = Color(0xFFE53935),            // Red error
+    error = Color(0xFFFF3B30),            // Warna error yang lebih cerah
     onError = Color.White,
-    errorContainer = Color(0xFFFFCDD2),    // Light red container
-    onErrorContainer = Color(0xFF5F0000),
+    errorContainer = Color(0xFFFFDAD5),    // Container error yang lembut
+    onErrorContainer = Color(0xFF410001),
 
     background = LightBackground,         // Menggunakan warna dari Color.kt
     onBackground = LightTextPrimary,      // Menggunakan warna dari Color.kt
@@ -45,33 +45,33 @@ private val LightColorScheme = lightColorScheme(
     onSurface = LightTextPrimary,         // Menggunakan warna dari Color.kt
 
     surfaceVariant = LightSurfaceVariant, // Menggunakan warna dari Color.kt
-    onSurfaceVariant = Color(0xFF41484D), // Dark text on surface variant
+    onSurfaceVariant = Color(0xFF4A4A4A), // Teks kontras lebih baik
 
-    outline = Color(0xFF7C8589),          // Medium gray outline
-    outlineVariant = Color(0xFFC5CACD)    // Light gray outline variant
+    outline = Color(0xFF757575),          // Outline yang lebih jelas
+    outlineVariant = Color(0xFFDCDCDC)    // Variant outline lebih lembut
 )
 
-// Dark Theme Colors
+// Dark Theme Colors - Kontras yang lebih baik dan warna yang lebih hidup
 private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFF90CAF9),          // Light blue primary for dark theme
-    onPrimary = Color(0xFF0C355A),         // Dark blue on light blue
-    primaryContainer = Color(0xFF0D47A1),  // Deep blue container
-    onPrimaryContainer = Color(0xFFD1E4FF), // Light text on deep blue
+    primary = Color(0xFFBB86FC),          // Ungu yang lebih cerah untuk dark theme
+    onPrimary = Color.Black,              // Teks gelap pada warna terang
+    primaryContainer = Color(0xFF4F378B),  // Container ungu yang lebih gelap
+    onPrimaryContainer = Color(0xFFEADDFF), // Teks terang pada container gelap
 
-    secondary = Color(0xFF80CBC4),        // Light teal secondary
-    onSecondary = Color(0xFF00423B),       // Dark teal on light teal
-    secondaryContainer = Color(0xFF00695C), // Deep teal container
-    onSecondaryContainer = Color(0xFFB2DFDB), // Light text on deep teal
+    secondary = Color(0xFF03DAC6),        // Teal yang konsisten dengan light theme
+    onSecondary = Color.Black,
+    secondaryContainer = Color(0xFF00504F), // Container teal yang lebih gelap
+    onSecondaryContainer = Color(0xFFCEFAF8), // Teks terang pada container gelap
 
-    tertiary = Color(0xFFCE93D8),         // Light purple tertiary
-    onTertiary = Color(0xFF4A0072),        // Dark purple on light purple
-    tertiaryContainer = Color(0xFF6A1B9A), // Deep purple container
-    onTertiaryContainer = Color(0xFFE1BEE7), // Light text on deep purple
+    tertiary = Color(0xFFFFB74D),         // Oranye yang lebih cerah untuk dark theme
+    onTertiary = Color.Black,
+    tertiaryContainer = Color(0xFF7F5000), // Container oranye yang lebih gelap
+    onTertiaryContainer = Color(0xFFFFE0B2), // Teks terang pada container gelap
 
-    error = Color(0xFFEF9A9A),            // Light red error
-    onError = Color(0xFF7F0000),           // Dark red on light red
-    errorContainer = Color(0xFFB71C1C),    // Deep red container
-    onErrorContainer = Color(0xFFFFCDD2),  // Light text on deep red
+    error = Color(0xFFFF5252),            // Warna error yang lebih cerah
+    onError = Color.Black,
+    errorContainer = Color(0xFF8B0000),    // Container error yang lebih gelap
+    onErrorContainer = Color(0xFFFFDAD5),  // Teks terang pada container gelap
 
     background = DarkBackground,          // Menggunakan warna dari Color.kt
     onBackground = DarkTextPrimary,       // Menggunakan warna dari Color.kt
@@ -80,10 +80,10 @@ private val DarkColorScheme = darkColorScheme(
     onSurface = DarkTextPrimary,          // Menggunakan warna dari Color.kt
 
     surfaceVariant = DarkSurfaceVariant,  // Menggunakan warna dari Color.kt
-    onSurfaceVariant = Color(0xFFBDBDBD), // Light text on dark surface variant
+    onSurfaceVariant = Color(0xFFDDDDDD), // Teks terang pada surface variant
 
-    outline = Color(0xFF9E9E9E),          // Medium gray outline for dark theme
-    outlineVariant = Color(0xFF707070)    // Darker gray outline variant
+    outline = Color(0xFF9E9E9E),          // Outline yang lebih jelas untuk dark theme
+    outlineVariant = Color(0xFF555555)    // Variant outline lebih gelap
 )
 
 @Composable
@@ -108,20 +108,16 @@ fun TodofyTheme(
             val window = (view.context as Activity).window
 
             // Update status bar color for more modern look
-            window.statusBarColor = if (darkTheme) {
-                Color(0xFF000000).toArgb() // Black status bar in dark mode
-            } else {
-                colorScheme.primary.toArgb() // Primary color in light mode
-            }
+            window.statusBarColor = Color.Transparent.toArgb() // Transparent status bar untuk edge-to-edge
 
+            // Setup edge-to-edge display
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+
+            // Adjust status bar icons
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
 
-            // Optional: make bottom navigation bar match theme
-            window.navigationBarColor = if (darkTheme) {
-                DarkBackground.toArgb() // Menggunakan warna dari Color.kt
-            } else {
-                LightBackground.toArgb() // Menggunakan warna dari Color.kt
-            }
+            // Make bottom navigation bar transparent
+            window.navigationBarColor = Color.Transparent.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = !darkTheme
         }
     }

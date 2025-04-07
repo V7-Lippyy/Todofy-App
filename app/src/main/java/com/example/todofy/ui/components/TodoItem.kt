@@ -2,6 +2,7 @@ package com.example.todofy.ui.components
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -23,6 +24,11 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Done
+import androidx.compose.material.icons.rounded.Error
+import androidx.compose.material.icons.rounded.Event
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DismissDirection
@@ -40,6 +46,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -68,23 +75,33 @@ fun TodoItem(
     onDeleteClick: (TodoEntity) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Gradient color untuk latar belakang
-    val gradientColor = categoryColor.copy(alpha = 0.05f)
+    // Warna gradient untuk efek background berdasarkan prioritas
+    val startColor = categoryColor.copy(alpha = 0.1f)
+    val endColor = Color.Transparent
+
+    // Animasi warna untuk card saat diselesaikan/belum
+    val cardColor by animateColorAsState(
+        targetValue = if (todo.isCompleted)
+            MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+        else
+            MaterialTheme.colorScheme.surface,
+        animationSpec = tween(300)
+    )
+
+    val elevationAmount = if (todo.isCompleted) 0.dp else 4.dp
 
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        shape = RoundedCornerShape(16.dp), // Corner radius ditingkatkan
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = if (todo.isCompleted) 1.dp else 3.dp // Elevation berbeda untuk todo yang selesai
-        ),
-        colors = CardDefaults.cardColors(
-            containerColor = if (todo.isCompleted)
-                MaterialTheme.colorScheme.surface.copy(alpha = 0.8f) // Sedikit transparan untuk todo yang selesai
-            else
-                MaterialTheme.colorScheme.surface
-        ),
+            .padding(vertical = 4.dp)
+            .shadow(
+                elevation = elevationAmount,
+                shape = RoundedCornerShape(20.dp),
+                spotColor = categoryColor.copy(alpha = 0.1f)
+            ),
+        shape = RoundedCornerShape(20.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        colors = CardDefaults.cardColors(containerColor = cardColor),
         onClick = { onEditClick(todo) }
     ) {
         Box(
@@ -92,53 +109,62 @@ fun TodoItem(
                 .fillMaxWidth()
                 .background(
                     brush = Brush.horizontalGradient(
-                        colors = listOf(gradientColor, Color.Transparent),
+                        colors = listOf(startColor, endColor),
                         startX = 0f,
-                        endX = 300f
+                        endX = 500f
                     )
                 )
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 12.dp, top = 14.dp, end = 14.dp, bottom = 14.dp),
+                    .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Indikator prioritas dengan bentuk yang lebih variatif
+                // Indikator prioritas dengan desain modern
                 Box(
                     modifier = Modifier
-                        .size(26.dp)
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(categoryColor.copy(alpha = 0.2f)), // Lighter background
+                        .size(24.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(categoryColor.copy(alpha = 0.15f))
+                        .border(
+                            width = 1.dp,
+                            color = categoryColor.copy(alpha = 0.3f),
+                            shape = RoundedCornerShape(8.dp)
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(14.dp)
+                            .size(12.dp)
                             .clip(CircleShape)
                             .background(categoryColor)
                     )
                 }
 
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(16.dp))
 
-                // Isi Todo
+                // Konten tugas
                 Column(
                     modifier = Modifier.weight(1f)
                 ) {
+                    // Judul tugas
                     Text(
                         text = todo.title,
                         style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.SemiBold, // Lebih bold
-                            letterSpacing = (-0.2).sp // Letter spacing yang lebih ketat
+                            fontWeight = FontWeight.SemiBold,
+                            letterSpacing = (-0.3).sp
                         ),
                         textDecoration = if (todo.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
                         color = if (todo.isCompleted)
                             MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                         else
-                            MaterialTheme.colorScheme.onSurface
+                            MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
 
+                    // Deskripsi (jika ada)
                     if (todo.description.isNotBlank()) {
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
@@ -151,41 +177,43 @@ fun TodoItem(
                         )
                     }
 
-                    // Informasi waktu dalam container khusus jika ada deadline
+                    // Informasi deadline (jika ada)
                     todo.dueDate?.let { dueDate ->
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        val isTerlambat = dueDate.before(Date()) && !todo.isCompleted
+                        val isOverdue = dueDate.before(Date()) && !todo.isCompleted
                         val displayDate = if (todo.hasTime) dueDate.formatToDisplayDateTime() else dueDate.formatToDisplayDate()
 
                         Surface(
-                            shape = RoundedCornerShape(6.dp),
-                            color = if (isTerlambat)
+                            shape = RoundedCornerShape(12.dp),
+                            color = if (isOverdue)
                                 MaterialTheme.colorScheme.errorContainer
                             else
-                                MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f),
+                                MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.8f),
                             modifier = Modifier.padding(end = 8.dp)
                         ) {
                             Row(
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
-                                    imageVector = if (isTerlambat) Icons.Default.Error else Icons.Filled.Event,
+                                    imageVector = if (isOverdue) Icons.Rounded.Error else Icons.Rounded.Event,
                                     contentDescription = null,
-                                    tint = if (isTerlambat)
+                                    tint = if (isOverdue)
                                         MaterialTheme.colorScheme.error
                                     else
                                         MaterialTheme.colorScheme.secondary,
                                     modifier = Modifier.size(14.dp)
                                 )
 
-                                Spacer(modifier = Modifier.width(4.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
 
                                 Text(
                                     text = displayDate,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = if (isTerlambat)
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Medium
+                                    ),
+                                    color = if (isOverdue)
                                         MaterialTheme.colorScheme.error
                                     else
                                         MaterialTheme.colorScheme.secondary
@@ -195,18 +223,18 @@ fun TodoItem(
                     }
                 }
 
-                // Checkbox dengan style yang lebih modern
+                // Checkbox modern
                 Box(
                     modifier = Modifier
-                        .size(28.dp)
+                        .size(26.dp)
                         .clip(CircleShape)
                         .background(
-                            if (todo.isCompleted) categoryColor.copy(alpha = 0.9f)
+                            if (todo.isCompleted) categoryColor
                             else MaterialTheme.colorScheme.surface
                         )
                         .border(
                             width = 1.5.dp,
-                            color = if (todo.isCompleted) categoryColor else categoryColor.copy(alpha = 0.5f),
+                            color = if (todo.isCompleted) categoryColor else categoryColor.copy(alpha = 0.6f),
                             shape = CircleShape
                         )
                         .clickable { onCheckedChange(todo) },
@@ -214,9 +242,9 @@ fun TodoItem(
                 ) {
                     if (todo.isCompleted) {
                         Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "Completed",
-                            tint = MaterialTheme.colorScheme.surface,
+                            imageVector = Icons.Rounded.Check,
+                            contentDescription = "Selesai",
+                            tint = Color.White,
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -255,8 +283,8 @@ fun SwipeableTodoItem(
                 DismissDirection.EndToStart -> Alignment.CenterEnd
             }
             val icon = when (direction) {
-                DismissDirection.StartToEnd -> Icons.Default.Done
-                DismissDirection.EndToStart -> Icons.Default.Delete
+                DismissDirection.StartToEnd -> Icons.Rounded.Done
+                DismissDirection.EndToStart -> Icons.Rounded.Delete
             }
             val iconTint = when (direction) {
                 DismissDirection.StartToEnd -> MaterialTheme.colorScheme.primary
@@ -273,17 +301,18 @@ fun SwipeableTodoItem(
                     .padding(horizontal = 20.dp),
                 contentAlignment = alignment
             ) {
-                // Background dengan efek card rounded
                 Card(
                     modifier = Modifier
-                        .size(40.dp),
+                        .size(48.dp)
+                        .scale(scale),
                     shape = CircleShape,
                     colors = CardDefaults.cardColors(
                         containerColor = when (direction) {
-                            DismissDirection.StartToEnd -> MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
-                            DismissDirection.EndToStart -> MaterialTheme.colorScheme.error.copy(alpha = 0.8f)
+                            DismissDirection.StartToEnd -> MaterialTheme.colorScheme.primary
+                            DismissDirection.EndToStart -> MaterialTheme.colorScheme.error
                         }
-                    )
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -291,11 +320,9 @@ fun SwipeableTodoItem(
                     ) {
                         Icon(
                             icon,
-                            contentDescription = null,
+                            contentDescription = if (direction == DismissDirection.StartToEnd) "Selesaikan" else "Hapus",
                             tint = Color.White,
-                            modifier = Modifier
-                                .scale(scale)
-                                .size(20.dp)
+                            modifier = Modifier.size(24.dp)
                         )
                     }
                 }

@@ -9,6 +9,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,14 +26,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.PriorityHigh
-import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.Title
+import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.CalendarToday
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Description
+import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.PriorityHigh
+import androidx.compose.material.icons.rounded.Schedule
+import androidx.compose.material.icons.rounded.Title
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -50,6 +51,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -62,11 +64,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.todofy.ui.components.CategoryChip
@@ -147,12 +151,12 @@ fun AddEditTodoScreen(
         calendar.get(Calendar.DAY_OF_MONTH)
     )
 
-    // Background gradient
+    // Background gradient yang lebih modern
     val backgroundGradient = Brush.verticalGradient(
         colors = listOf(
             MaterialTheme.colorScheme.background,
             MaterialTheme.colorScheme.background,
-            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
         )
     )
 
@@ -162,21 +166,22 @@ fun AddEditTodoScreen(
                 title = {
                     Text(
                         text = if (viewModel.todoTitle.isBlank()) "Tambah Tugas" else "Edit Tugas",
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Kembali"
+                            imageVector = Icons.Rounded.ArrowBack,
+                            contentDescription = "Kembali",
+                            tint = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
         },
@@ -186,12 +191,18 @@ fun AddEditTodoScreen(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
                 shape = CircleShape,
-                modifier = Modifier.size(56.dp)
+                modifier = Modifier
+                    .size(58.dp)
+                    .shadow(
+                        elevation = 8.dp,
+                        shape = CircleShape,
+                        spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                    )
             ) {
                 Icon(
-                    imageVector = Icons.Default.Check,
+                    imageVector = Icons.Rounded.Check,
                     contentDescription = "Simpan Tugas",
-                    modifier = Modifier.size(28.dp)
+                    modifier = Modifier.size(26.dp)
                 )
             }
         },
@@ -210,7 +221,7 @@ fun AddEditTodoScreen(
                     .padding(16.dp)
                     .verticalScroll(rememberScrollState())
             ) {
-                // Card untuk input utama
+                // Card untuk input utama (judul dan deskripsi)
                 AnimatedVisibility(
                     visible = isVisible,
                     enter = fadeIn() + slideInVertically(
@@ -222,9 +233,14 @@ fun AddEditTodoScreen(
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 16.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                            .padding(bottom = 16.dp)
+                            .shadow(
+                                elevation = 8.dp,
+                                shape = RoundedCornerShape(24.dp),
+                                spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                            ),
+                        shape = RoundedCornerShape(24.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surface
                         )
@@ -232,41 +248,62 @@ fun AddEditTodoScreen(
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(16.dp)
+                                .padding(20.dp)
                         ) {
                             // Judul Task dengan icon
                             OutlinedTextField(
                                 value = viewModel.todoTitle,
                                 onValueChange = { viewModel.onEvent(AddEditTodoEvent.OnTitleChange(it)) },
-                                label = { Text("Judul") },
+                                label = {
+                                    Text(
+                                        "Judul",
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                },
                                 modifier = Modifier.fillMaxWidth(),
                                 leadingIcon = {
                                     Icon(
-                                        imageVector = Icons.Default.Title,
+                                        imageVector = Icons.Rounded.Title,
                                         contentDescription = null,
                                         tint = MaterialTheme.colorScheme.primary
                                     )
                                 },
-                                shape = RoundedCornerShape(12.dp)
+                                shape = RoundedCornerShape(16.dp),
+                                colors = TextFieldDefaults.outlinedTextFieldColors(
+                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                                    cursorColor = MaterialTheme.colorScheme.primary
+                                )
                             )
 
-                            Spacer(modifier = Modifier.height(16.dp))
+                            Spacer(modifier = Modifier.height(20.dp))
 
                             // Deskripsi Task dengan icon
                             OutlinedTextField(
                                 value = viewModel.todoDescription,
                                 onValueChange = { viewModel.onEvent(AddEditTodoEvent.OnDescriptionChange(it)) },
-                                label = { Text("Deskripsi") },
+                                label = {
+                                    Text(
+                                        "Deskripsi",
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                },
                                 modifier = Modifier.fillMaxWidth(),
                                 minLines = 3,
                                 leadingIcon = {
                                     Icon(
-                                        imageVector = Icons.Default.Description,
+                                        imageVector = Icons.Rounded.Description,
                                         contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.padding(bottom = 32.dp)
                                     )
                                 },
-                                shape = RoundedCornerShape(12.dp)
+                                shape = RoundedCornerShape(16.dp),
+                                colors = TextFieldDefaults.outlinedTextFieldColors(
+                                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                                    cursorColor = MaterialTheme.colorScheme.primary
+                                )
                             )
                         }
                     }
@@ -284,9 +321,14 @@ fun AddEditTodoScreen(
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 16.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                            .padding(bottom = 16.dp)
+                            .shadow(
+                                elevation = 6.dp,
+                                shape = RoundedCornerShape(24.dp),
+                                spotColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f)
+                            ),
+                        shape = RoundedCornerShape(24.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surface
                         )
@@ -294,52 +336,96 @@ fun AddEditTodoScreen(
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(16.dp)
+                                .padding(20.dp)
                         ) {
                             // Header prioritas dengan ikon
                             Row(
-                                verticalAlignment = Alignment.CenterVertically
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(bottom = 12.dp)
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.PriorityHigh,
+                                    imageVector = Icons.Rounded.PriorityHigh,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(24.dp)
                                 )
 
-                                Spacer(modifier = Modifier.width(8.dp))
+                                Spacer(modifier = Modifier.width(12.dp))
 
                                 Text(
                                     text = "Prioritas",
                                     style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.SemiBold
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                             }
 
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            // Chip prioritas
+                            // PERBAIKAN: Chip prioritas - dengan pengurutan dan distribusi yang lebih baik
                             if (categories.isNotEmpty()) {
-                                Row(
+                                // Mengurutkan kategori berdasarkan ID untuk urutan yang benar
+                                val sortedCategories = categories.sortedBy { it.id }
+
+                                Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(vertical = 8.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        .padding(vertical = 8.dp)
                                 ) {
-                                    categories.forEach { category ->
-                                        val priorityColor = when (category.name) {
-                                            "Sangat Rendah" -> Green
-                                            "Rendah" -> Blue
-                                            "Tinggi" -> Orange
-                                            "Sangat Tinggi" -> Red
-                                            else -> MaterialTheme.colorScheme.primary
+                                    // Baris pertama: Sangat Rendah dan Rendah
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceEvenly
+                                    ) {
+                                        // ID 1: Sangat Rendah
+                                        sortedCategories.find { it.id == 1 }?.let { category ->
+                                            CategoryChip(
+                                                category = category,
+                                                isSelected = category.id == viewModel.selectedCategoryId,
+                                                onClick = { viewModel.onEvent(AddEditTodoEvent.OnCategorySelect(category.id)) },
+                                                modifier = Modifier.weight(1f)
+                                            )
                                         }
 
-                                        CategoryChip(
-                                            category = category,
-                                            isSelected = category.id == viewModel.selectedCategoryId,
-                                            onClick = { viewModel.onEvent(AddEditTodoEvent.OnCategorySelect(category.id)) }
-                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+
+                                        // ID 2: Rendah
+                                        sortedCategories.find { it.id == 2 }?.let { category ->
+                                            CategoryChip(
+                                                category = category,
+                                                isSelected = category.id == viewModel.selectedCategoryId,
+                                                onClick = { viewModel.onEvent(AddEditTodoEvent.OnCategorySelect(category.id)) },
+                                                modifier = Modifier.weight(1f)
+                                            )
+                                        }
+                                    }
+
+                                    Spacer(modifier = Modifier.height(8.dp))
+
+                                    // Baris kedua: Tinggi dan Sangat Tinggi
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceEvenly
+                                    ) {
+                                        // ID 3: Tinggi
+                                        sortedCategories.find { it.id == 3 }?.let { category ->
+                                            CategoryChip(
+                                                category = category,
+                                                isSelected = category.id == viewModel.selectedCategoryId,
+                                                onClick = { viewModel.onEvent(AddEditTodoEvent.OnCategorySelect(category.id)) },
+                                                modifier = Modifier.weight(1f)
+                                            )
+                                        }
+
+                                        Spacer(modifier = Modifier.width(8.dp))
+
+                                        // ID 4: Sangat Tinggi
+                                        sortedCategories.find { it.id == 4 }?.let { category ->
+                                            CategoryChip(
+                                                category = category,
+                                                isSelected = category.id == viewModel.selectedCategoryId,
+                                                onClick = { viewModel.onEvent(AddEditTodoEvent.OnCategorySelect(category.id)) },
+                                                modifier = Modifier.weight(1f)
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -359,9 +445,14 @@ fun AddEditTodoScreen(
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 16.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                            .padding(bottom = 16.dp)
+                            .shadow(
+                                elevation = 6.dp,
+                                shape = RoundedCornerShape(24.dp),
+                                spotColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.1f)
+                            ),
+                        shape = RoundedCornerShape(24.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surface
                         )
@@ -369,36 +460,38 @@ fun AddEditTodoScreen(
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(16.dp)
+                                .padding(20.dp)
                         ) {
                             // Header pengaturan waktu
                             Row(
-                                verticalAlignment = Alignment.CenterVertically
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(bottom = 12.dp)
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Schedule,
+                                    imageVector = Icons.Rounded.Schedule,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(24.dp)
                                 )
 
-                                Spacer(modifier = Modifier.width(8.dp))
+                                Spacer(modifier = Modifier.width(12.dp))
 
                                 Text(
                                     text = "Pengaturan Waktu",
                                     style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.SemiBold
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                             }
 
-                            Spacer(modifier = Modifier.height(12.dp))
+                            Spacer(modifier = Modifier.height(4.dp))
 
                             // Checkbox untuk set waktu (jam & menit)
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 4.dp)
+                                    .padding(vertical = 8.dp)
                             ) {
                                 Checkbox(
                                     checked = viewModel.hasTime,
@@ -412,20 +505,21 @@ fun AddEditTodoScreen(
                                 )
                                 Text(
                                     text = "Sertakan waktu (jam & menit)",
-                                    style = MaterialTheme.typography.bodyMedium
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                             }
 
                             Spacer(modifier = Modifier.height(16.dp))
 
-                            // Tanggal & Waktu Mulai dengan latar belakang
+                            // Tanggal & Waktu Mulai dengan desain modern
                             Surface(
-                                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
-                                shape = RoundedCornerShape(12.dp),
+                                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+                                shape = RoundedCornerShape(20.dp),
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Column(
-                                    modifier = Modifier.padding(12.dp)
+                                    modifier = Modifier.padding(16.dp)
                                 ) {
                                     Text(
                                         text = "Tanggal Mulai",
@@ -434,7 +528,7 @@ fun AddEditTodoScreen(
                                         color = MaterialTheme.colorScheme.onSurface
                                     )
 
-                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Spacer(modifier = Modifier.height(12.dp))
 
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
@@ -443,27 +537,30 @@ fun AddEditTodoScreen(
                                         Button(
                                             onClick = { startDatePickerDialog.show() },
                                             modifier = Modifier.weight(1f),
-                                            shape = RoundedCornerShape(8.dp),
+                                            shape = RoundedCornerShape(16.dp),
                                             colors = ButtonDefaults.buttonColors(
-                                                containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+                                                containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f)
+                                            ),
+                                            elevation = ButtonDefaults.buttonElevation(
+                                                defaultElevation = 4.dp
                                             )
                                         ) {
                                             Icon(
-                                                imageVector = Icons.Default.PlayArrow,
+                                                imageVector = Icons.Rounded.PlayArrow,
                                                 contentDescription = "Pilih Tanggal Mulai"
                                             )
-                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Spacer(modifier = Modifier.width(8.dp))
                                             Text(
                                                 text = viewModel.startDate?.formatToDisplayDate() ?: "Pilih Tanggal",
                                                 fontWeight = FontWeight.Medium
                                             )
                                         }
 
-                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Spacer(modifier = Modifier.width(12.dp))
 
                                         // Tombol Time Picker untuk tanggal mulai
                                         if (viewModel.hasTime && viewModel.startDate != null) {
-                                            IconButton(
+                                            Surface(
                                                 onClick = {
                                                     val cal = Calendar.getInstance().apply { time = viewModel.startDate!! }
                                                     TimePickerDialog(
@@ -476,39 +573,51 @@ fun AddEditTodoScreen(
                                                         true
                                                     ).show()
                                                 },
+                                                shape = CircleShape,
+                                                color = MaterialTheme.colorScheme.secondaryContainer,
                                                 modifier = Modifier
-                                                    .clip(CircleShape)
-                                                    .background(MaterialTheme.colorScheme.secondaryContainer)
+                                                    .size(44.dp)
+                                                    .shadow(
+                                                        elevation = 4.dp,
+                                                        shape = CircleShape
+                                                    )
                                             ) {
-                                                Icon(
-                                                    imageVector = Icons.Default.Schedule,
-                                                    contentDescription = "Set Waktu Mulai",
-                                                    tint = MaterialTheme.colorScheme.onSecondaryContainer
-                                                )
+                                                Box(
+                                                    modifier = Modifier.fillMaxSize(),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Rounded.Schedule,
+                                                        contentDescription = "Set Waktu Mulai",
+                                                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                                        modifier = Modifier.size(20.dp)
+                                                    )
+                                                }
                                             }
 
-                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Spacer(modifier = Modifier.width(8.dp))
 
                                             Text(
                                                 text = viewModel.startDate?.formatToDisplayTime() ?: "--:--",
                                                 style = MaterialTheme.typography.bodyMedium,
-                                                fontWeight = FontWeight.Medium
+                                                fontWeight = FontWeight.Medium,
+                                                color = MaterialTheme.colorScheme.onSurface
                                             )
                                         }
                                     }
                                 }
                             }
 
-                            Spacer(modifier = Modifier.height(16.dp))
+                            Spacer(modifier = Modifier.height(20.dp))
 
-                            // Tanggal & Waktu Batas dengan latar belakang
+                            // Tanggal & Waktu Tenggat dengan desain modern
                             Surface(
-                                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
-                                shape = RoundedCornerShape(12.dp),
+                                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f),
+                                shape = RoundedCornerShape(20.dp),
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Column(
-                                    modifier = Modifier.padding(12.dp)
+                                    modifier = Modifier.padding(16.dp)
                                 ) {
                                     Text(
                                         text = "Batas Waktu",
@@ -517,7 +626,7 @@ fun AddEditTodoScreen(
                                         color = MaterialTheme.colorScheme.onSurface
                                     )
 
-                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Spacer(modifier = Modifier.height(12.dp))
 
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
@@ -526,27 +635,30 @@ fun AddEditTodoScreen(
                                         Button(
                                             onClick = { dueDatePickerDialog.show() },
                                             modifier = Modifier.weight(1f),
-                                            shape = RoundedCornerShape(8.dp),
+                                            shape = RoundedCornerShape(16.dp),
                                             colors = ButtonDefaults.buttonColors(
-                                                containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.8f)
+                                                containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.9f)
+                                            ),
+                                            elevation = ButtonDefaults.buttonElevation(
+                                                defaultElevation = 4.dp
                                             )
                                         ) {
                                             Icon(
-                                                imageVector = Icons.Default.CalendarToday,
+                                                imageVector = Icons.Rounded.CalendarToday,
                                                 contentDescription = "Pilih Tanggal Batas"
                                             )
-                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Spacer(modifier = Modifier.width(8.dp))
                                             Text(
                                                 text = viewModel.dueDate?.formatToDisplayDate() ?: "Pilih Tanggal",
                                                 fontWeight = FontWeight.Medium
                                             )
                                         }
 
-                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Spacer(modifier = Modifier.width(12.dp))
 
                                         // Tombol Time Picker untuk tenggat
                                         if (viewModel.hasTime && viewModel.dueDate != null) {
-                                            IconButton(
+                                            Surface(
                                                 onClick = {
                                                     val cal = Calendar.getInstance().apply { time = viewModel.dueDate!! }
                                                     TimePickerDialog(
@@ -559,23 +671,35 @@ fun AddEditTodoScreen(
                                                         true
                                                     ).show()
                                                 },
+                                                shape = CircleShape,
+                                                color = MaterialTheme.colorScheme.primaryContainer,
                                                 modifier = Modifier
-                                                    .clip(CircleShape)
-                                                    .background(MaterialTheme.colorScheme.primaryContainer)
+                                                    .size(44.dp)
+                                                    .shadow(
+                                                        elevation = 4.dp,
+                                                        shape = CircleShape
+                                                    )
                                             ) {
-                                                Icon(
-                                                    imageVector = Icons.Default.Schedule,
-                                                    contentDescription = "Set Waktu Tenggat",
-                                                    tint = MaterialTheme.colorScheme.onPrimaryContainer
-                                                )
+                                                Box(
+                                                    modifier = Modifier.fillMaxSize(),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Rounded.Schedule,
+                                                        contentDescription = "Set Waktu Tenggat",
+                                                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                                        modifier = Modifier.size(20.dp)
+                                                    )
+                                                }
                                             }
 
-                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Spacer(modifier = Modifier.width(8.dp))
 
                                             Text(
                                                 text = viewModel.dueDate?.formatToDisplayTime() ?: "--:--",
                                                 style = MaterialTheme.typography.bodyMedium,
-                                                fontWeight = FontWeight.Medium
+                                                fontWeight = FontWeight.Medium,
+                                                color = MaterialTheme.colorScheme.onSurface
                                             )
                                         }
                                     }
@@ -584,7 +708,7 @@ fun AddEditTodoScreen(
 
                             // Tampilkan estimasi waktu
                             if (viewModel.startDate != null && viewModel.dueDate != null) {
-                                Spacer(modifier = Modifier.height(16.dp))
+                                Spacer(modifier = Modifier.height(20.dp))
 
                                 val isLate = remainingTime.contains("Terlambat")
                                 val estimasiColor = if (isLate)
@@ -593,7 +717,7 @@ fun AddEditTodoScreen(
                                     MaterialTheme.colorScheme.primary
 
                                 Surface(
-                                    shape = RoundedCornerShape(8.dp),
+                                    shape = RoundedCornerShape(16.dp),
                                     color = if (isLate)
                                         MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f)
                                     else
@@ -601,17 +725,17 @@ fun AddEditTodoScreen(
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     Row(
-                                        modifier = Modifier.padding(12.dp),
+                                        modifier = Modifier.padding(16.dp),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Icon(
-                                            imageVector = Icons.Default.Schedule,
+                                            imageVector = Icons.Rounded.Schedule,
                                             contentDescription = null,
                                             tint = estimasiColor,
-                                            modifier = Modifier.size(20.dp)
+                                            modifier = Modifier.size(22.dp)
                                         )
 
-                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Spacer(modifier = Modifier.width(12.dp))
 
                                         Text(
                                             text = "Estimasi waktu: $remainingTime",
@@ -627,7 +751,7 @@ fun AddEditTodoScreen(
                 }
 
                 // Spacer di bagian bawah untuk FAB
-                Spacer(modifier = Modifier.height(80.dp))
+                Spacer(modifier = Modifier.height(90.dp))
             }
         }
     }

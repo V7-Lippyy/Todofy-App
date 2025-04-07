@@ -3,10 +3,13 @@ package com.example.todofy.ui.screens.home
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,7 +17,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -27,18 +29,17 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AddTask
-import androidx.compose.material.icons.filled.Assessment
-import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.Pending
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.AddTask
+import androidx.compose.material.icons.rounded.Assessment
+import androidx.compose.material.icons.rounded.CalendarToday
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Error
+import androidx.compose.material.icons.rounded.Pending
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DismissState
 import androidx.compose.material3.DismissValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -59,6 +60,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -68,7 +70,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.todofy.data.local.entity.CategoryEntity
-import com.example.todofy.data.local.entity.TodoEntity
 import com.example.todofy.ui.components.CategoryChip
 import com.example.todofy.ui.components.SearchBar
 import com.example.todofy.ui.components.SwipeableTodoItem
@@ -96,12 +97,13 @@ fun HomeScreen(
     val pendingTodosCount by viewModel.pendingTodosCount.collectAsStateWithLifecycle()
     val overdueTodosCount by viewModel.overdueTodosCount.collectAsStateWithLifecycle()
 
-    // Gradient background
+    // Efek gradient yang lebih modern untuk background
     val gradientBackground = Brush.verticalGradient(
         colors = listOf(
             MaterialTheme.colorScheme.background,
             MaterialTheme.colorScheme.background,
-            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            MaterialTheme.colorScheme.background,
+            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
         )
     )
 
@@ -136,6 +138,11 @@ fun HomeScreen(
                 elevation = FloatingActionButtonDefaults.elevation(
                     defaultElevation = 6.dp,
                     pressedElevation = 12.dp
+                ),
+                modifier = Modifier.shadow(
+                    elevation = 8.dp,
+                    shape = CircleShape,
+                    spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
                 )
             ) {
                 Icon(
@@ -160,15 +167,25 @@ fun HomeScreen(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
-                    shape = RoundedCornerShape(24.dp), // Lebih rounded
+                        .padding(16.dp)
+                        .shadow(
+                            elevation = 8.dp,
+                            shape = RoundedCornerShape(28.dp),
+                            spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                        )
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                            shape = RoundedCornerShape(28.dp)
+                        ),
+                    shape = RoundedCornerShape(28.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surface
                     ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp) // Lebih elevated
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
                     Column(
-                        modifier = Modifier.padding(20.dp) // Padding lebih besar
+                        modifier = Modifier.padding(22.dp)
                     ) {
                         // Header
                         Row(
@@ -176,9 +193,9 @@ fun HomeScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            // App Title dengan styling
+                            // App Title dengan styling modern
                             Text(
-                                text = "TodoFy",
+                                text = "Todofy",
                                 style = MaterialTheme.typography.headlineMedium.copy(
                                     fontWeight = FontWeight.ExtraBold,
                                     letterSpacing = (-1).sp
@@ -186,7 +203,7 @@ fun HomeScreen(
                                 color = MaterialTheme.colorScheme.primary
                             )
 
-                            // Tampilkan tanggal dengan efek
+                            // Tampilkan tanggal dengan efek chip modern
                             val today = remember {
                                 val dateFormat = SimpleDateFormat("EEEE, d MMM", Locale("id", "ID"))
                                 dateFormat.format(Date())
@@ -195,15 +212,14 @@ fun HomeScreen(
                             Surface(
                                 shape = RoundedCornerShape(24.dp),
                                 color = MaterialTheme.colorScheme.primaryContainer,
-                                tonalElevation = 2.dp,
                                 modifier = Modifier.padding(horizontal = 4.dp)
                             ) {
                                 Row(
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Default.CalendarToday,
+                                        imageVector = Icons.Rounded.CalendarToday,
                                         contentDescription = null,
                                         tint = MaterialTheme.colorScheme.primary,
                                         modifier = Modifier.size(16.dp)
@@ -224,7 +240,7 @@ fun HomeScreen(
 
                         Spacer(modifier = Modifier.height(20.dp))
 
-                        // Statistik dalam satu baris dengan animasi
+                        // Statistik dalam satu baris dengan animasi modern
                         AnimatedVisibility(
                             visible = isVisible,
                             enter = fadeIn() + slideInVertically(
@@ -242,19 +258,19 @@ fun HomeScreen(
                                 StatItemModern(
                                     count = completedTodosCount,
                                     label = "Selesai",
-                                    icon = Icons.Default.CheckCircle,
+                                    icon = Icons.Rounded.CheckCircle,
                                     color = Green
                                 )
                                 StatItemModern(
                                     count = pendingTodosCount,
                                     label = "Tertunda",
-                                    icon = Icons.Default.Pending,
+                                    icon = Icons.Rounded.Pending,
                                     color = Blue
                                 )
                                 StatItemModern(
                                     count = overdueTodosCount,
                                     label = "Terlambat",
-                                    icon = Icons.Default.Error,
+                                    icon = Icons.Rounded.Error,
                                     color = Red
                                 )
                             }
@@ -267,7 +283,7 @@ fun HomeScreen(
                     visible = isVisible,
                     enter = fadeIn(
                         initialAlpha = 0f,
-                        animationSpec = tween(durationMillis = 500, delayMillis = 300)
+                        animationSpec = tween(durationMillis = 400, delayMillis = 200)
                     )
                 ) {
                     // Search Bar yang lebih modern
@@ -278,19 +294,19 @@ fun HomeScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
-                // Kategori dalam LazyRow yang lebih kompak dengan animasi
+                // Kategori dalam LazyRow dengan desain yang lebih modern
                 AnimatedVisibility(
                     visible = isVisible,
                     enter = fadeIn(
                         initialAlpha = 0f,
-                        animationSpec = tween(durationMillis = 500, delayMillis = 400)
+                        animationSpec = tween(durationMillis = 400, delayMillis = 300)
                     )
                 ) {
                     if (categories.isNotEmpty()) {
                         LazyRow(
-                            contentPadding = PaddingValues(horizontal = 16.dp),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             // Opsi "Semua"
@@ -318,70 +334,84 @@ fun HomeScreen(
                     }
                 }
 
-                // Separator dengan label lebih modern
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                // Separator heading yang lebih modern
+                AnimatedVisibility(
+                    visible = isVisible,
+                    enter = fadeIn(
+                        initialAlpha = 0f,
+                        animationSpec = tween(durationMillis = 400, delayMillis = 400)
+                    )
                 ) {
                     Row(
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        // Indikator visual
-                        Box(
-                            modifier = Modifier
-                                .size(20.dp)
-                                .background(
-                                    MaterialTheme.colorScheme.primary,
-                                    RoundedCornerShape(4.dp)
-                                )
-                        )
-
-                        Spacer(modifier = Modifier.width(8.dp))
-
-                        Text(
-                            text = "Tugas Anda",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 0.5.sp
-                            )
-                        )
-                    }
-
-                    // Tombol statistik yang lebih menarik
-                    Surface(
-                        onClick = onNavigateToStatistics,
-                        shape = RoundedCornerShape(20.dp),
-                        color = MaterialTheme.colorScheme.secondaryContainer,
-                        tonalElevation = 2.dp
-                    ) {
+                        // Heading "Tugas Anda" dengan indikator modern
                         Row(
-                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                                .padding(horizontal = 12.dp, vertical = 8.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Assessment,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.secondary,
-                                modifier = Modifier.size(16.dp)
+                            Box(
+                                modifier = Modifier
+                                    .size(12.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.primary)
                             )
 
-                            Spacer(modifier = Modifier.width(6.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
 
                             Text(
-                                text = "Statistik",
-                                style = MaterialTheme.typography.labelMedium.copy(
-                                    fontWeight = FontWeight.SemiBold
+                                text = "Tugas Anda",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.Bold
                                 ),
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                                color = MaterialTheme.colorScheme.onBackground
                             )
+                        }
+
+                        // Tombol statistik yang lebih modern
+                        Surface(
+                            onClick = onNavigateToStatistics,
+                            shape = RoundedCornerShape(24.dp),
+                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            modifier = Modifier.shadow(
+                                elevation = 4.dp,
+                                shape = RoundedCornerShape(24.dp),
+                                spotColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f)
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Assessment,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.secondary,
+                                    modifier = Modifier.size(18.dp)
+                                )
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                Text(
+                                    text = "Statistik",
+                                    style = MaterialTheme.typography.labelMedium.copy(
+                                        fontWeight = FontWeight.SemiBold
+                                    ),
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                            }
                         }
                     }
                 }
 
-                // Daftar Todo
+                // Daftar Todo atau tampilan kosong
                 if (filteredTodos.isEmpty()) {
                     // Tampilan saat tidak ada todo
                     EmptyTodoListModern(
@@ -391,8 +421,13 @@ fun HomeScreen(
                     // LazyColumn dengan efek animasi
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 80.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp) // Spacing lebih besar
+                        contentPadding = PaddingValues(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = 0.dp,
+                            bottom = 90.dp
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(
                             items = filteredTodos,
@@ -412,11 +447,8 @@ fun HomeScreen(
                                 }
                             )
 
-                            // Mencari kategori untuk mendapatkan warna dan nama
                             val category = categories.find { it.id == todo.categoryId }
-                            val categoryName = category?.name ?: "Rendah" // Default name
-
-                            // Warna prioritas
+                            val categoryName = category?.name ?: "Rendah"
                             val priorityColor = when (categoryName) {
                                 "Sangat Rendah" -> Green
                                 "Rendah" -> Blue
@@ -425,12 +457,11 @@ fun HomeScreen(
                                 else -> MaterialTheme.colorScheme.primary
                             }
 
-                            // Animasi item
                             AnimatedVisibility(
                                 visible = isVisible,
                                 enter = fadeIn(
                                     initialAlpha = 0f,
-                                    animationSpec = tween(durationMillis = 300)
+                                    animationSpec = tween(durationMillis = 300, delayMillis = 50 * filteredTodos.indexOf(todo))
                                 ) + slideInVertically(
                                     initialOffsetY = { 50 },
                                     animationSpec = spring(
@@ -467,16 +498,16 @@ fun StatItemModern(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Ikon dengan efek
+        // Ikon dengan latar belakang dan efek gradient
         Box(
             modifier = Modifier
-                .size(52.dp)
-                .clip(RoundedCornerShape(16.dp)) // Rounded rectangle
+                .size(56.dp)
+                .clip(RoundedCornerShape(16.dp))
                 .background(
                     brush = Brush.radialGradient(
                         colors = listOf(
-                            color.copy(alpha = 0.2f),
-                            color.copy(alpha = 0.1f)
+                            color.copy(alpha = 0.15f),
+                            color.copy(alpha = 0.05f)
                         )
                     )
                 ),
@@ -490,14 +521,15 @@ fun StatItemModern(
             )
         }
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Jumlah dengan efek
         Text(
             text = count.toString(),
             style = MaterialTheme.typography.titleLarge.copy(
                 fontWeight = FontWeight.ExtraBold
-            )
+            ),
+            color = MaterialTheme.colorScheme.onSurface
         )
 
         // Label
@@ -519,31 +551,37 @@ fun EmptyTodoListModern(
             .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
-        // Card dengan efek blur background
+        // Card dengan desain modern
         Card(
-            modifier = Modifier.fillMaxWidth(0.85f),
-            shape = RoundedCornerShape(28.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            modifier = Modifier
+                .fillMaxWidth(0.85f)
+                .shadow(
+                    elevation = 8.dp,
+                    shape = RoundedCornerShape(2.dp),
+                    spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.01f)
+                ),
+            shape = RoundedCornerShape(12.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.95f)
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f)
             )
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(32.dp),
+                    .padding(36.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Ilustrasi animasi
+                // Ilustrasi animasi modern
                 Box(
                     modifier = Modifier
                         .size(120.dp)
-                        .clip(RoundedCornerShape(24.dp))
+                        .clip(RoundedCornerShape(32.dp))
                         .background(
                             brush = Brush.radialGradient(
                                 colors = listOf(
-                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
                                 )
                             )
                         ),
@@ -553,12 +591,12 @@ fun EmptyTodoListModern(
                     Box(
                         modifier = Modifier
                             .size(90.dp)
-                            .clip(RoundedCornerShape(18.dp))
+                            .clip(RoundedCornerShape(24.dp))
                             .background(
                                 brush = Brush.radialGradient(
                                     colors = listOf(
-                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
-                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                                     )
                                 )
                             ),
@@ -566,10 +604,10 @@ fun EmptyTodoListModern(
                     ) {
                         // Icon
                         Icon(
-                            imageVector = Icons.Default.AddTask,
+                            imageVector = Icons.Rounded.AddTask,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(48.dp)
+                            modifier = Modifier.size(50.dp)
                         )
                     }
                 }
@@ -581,7 +619,8 @@ fun EmptyTodoListModern(
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.Bold,
                         letterSpacing = (-0.5).sp
-                    )
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -593,28 +632,33 @@ fun EmptyTodoListModern(
                     textAlign = TextAlign.Center
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
-                // Tombol Tambah yang lebih modern
+                // Tombol tambah yang lebih modern
                 Button(
                     onClick = onAddClick,
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(24.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary
                     ),
-                    contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp),
+                    contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
                     elevation = ButtonDefaults.buttonElevation(
                         defaultElevation = 4.dp,
                         pressedElevation = 8.dp
+                    ),
+                    modifier = Modifier.shadow(
+                        elevation = 4.dp,
+                        shape = RoundedCornerShape(24.dp),
+                        spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
                     )
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Add,
+                        imageVector = Icons.Rounded.Add,
                         contentDescription = null,
                         modifier = Modifier.size(20.dp)
                     )
 
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
 
                     Text(
                         text = "Tambah Tugas",
