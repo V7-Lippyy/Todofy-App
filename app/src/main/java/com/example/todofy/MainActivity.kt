@@ -1,4 +1,4 @@
-ipackage com.example.todofy
+package com.example.todofy
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
