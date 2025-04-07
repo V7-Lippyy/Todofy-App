@@ -25,10 +25,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.AddTask
 import androidx.compose.material.icons.rounded.Assessment
@@ -36,19 +38,23 @@ import androidx.compose.material.icons.rounded.CalendarToday
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Error
 import androidx.compose.material.icons.rounded.Pending
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DismissValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDismissState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -70,6 +76,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.todofy.data.local.entity.CategoryEntity
+import com.example.todofy.data.local.entity.TodoEntity
 import com.example.todofy.ui.components.CategoryChip
 import com.example.todofy.ui.components.SearchBar
 import com.example.todofy.ui.components.SwipeableTodoItem
@@ -96,6 +103,11 @@ fun HomeScreen(
     val completedTodosCount by viewModel.completedTodosCount.collectAsStateWithLifecycle()
     val pendingTodosCount by viewModel.pendingTodosCount.collectAsStateWithLifecycle()
     val overdueTodosCount by viewModel.overdueTodosCount.collectAsStateWithLifecycle()
+
+    // State untuk mode seleksi dan daftar todo yang dipilih
+    var isSelectionMode by remember { mutableStateOf(false) }
+    var selectedTodos by remember { mutableStateOf(setOf<TodoEntity>()) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     // Efek gradient yang lebih modern untuk background
     val gradientBackground = Brush.verticalGradient(
@@ -334,7 +346,7 @@ fun HomeScreen(
                     }
                 }
 
-                // Separator heading yang lebih modern
+                // Separator heading yang lebih modern dengan tombol seleksi dan delete
                 AnimatedVisibility(
                     visible = isVisible,
                     enter = fadeIn(
@@ -368,47 +380,141 @@ fun HomeScreen(
 
                             Text(
                                 text = "Tugas Anda",
-                                style = MaterialTheme.typography.titleMedium.copy(
+                                style = MaterialTheme.typography.titleSmall.copy( // Mengubah dari titleMedium ke titleSmall untuk memperkecil teks
                                     fontWeight = FontWeight.Bold
                                 ),
                                 color = MaterialTheme.colorScheme.onBackground
                             )
                         }
 
-                        // Tombol statistik yang lebih modern
-                        Surface(
-                            onClick = onNavigateToStatistics,
-                            shape = RoundedCornerShape(24.dp),
-                            color = MaterialTheme.colorScheme.secondaryContainer,
-                            modifier = Modifier.shadow(
-                                elevation = 4.dp,
-                                shape = RoundedCornerShape(24.dp),
-                                spotColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f)
-                            )
+                        // Container untuk tombol Statistik, Seleksi, dan Delete
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                            // Tombol statistik
+                            Surface(
+                                onClick = onNavigateToStatistics,
+                                shape = RoundedCornerShape(24.dp),
+                                color = MaterialTheme.colorScheme.secondaryContainer
                             ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Assessment,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.secondary,
-                                    modifier = Modifier.size(18.dp)
-                                )
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Assessment,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.secondary,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = "Statistik",
+                                        style = MaterialTheme.typography.labelMedium.copy(
+                                            fontWeight = FontWeight.SemiBold
+                                        ),
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                }
+                            }
 
-                                Spacer(modifier = Modifier.width(8.dp))
+                            // Tombol Seleksi
+                            Surface(
+                                onClick = {
+                                    isSelectionMode = !isSelectionMode
+                                    if (!isSelectionMode) selectedTodos = emptySet()
+                                },
+                                shape = RoundedCornerShape(24.dp),
+                                color = MaterialTheme.colorScheme.tertiaryContainer
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.CheckCircle,
+                                        contentDescription = "Mode Seleksi",
+                                        tint = MaterialTheme.colorScheme.tertiary,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = if (isSelectionMode) "Batal" else "Pilih",
+                                        style = MaterialTheme.typography.labelMedium.copy(
+                                            fontWeight = FontWeight.SemiBold
+                                        ),
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                                    )
+                                }
+                            }
 
-                                Text(
-                                    text = "Statistik",
-                                    style = MaterialTheme.typography.labelMedium.copy(
-                                        fontWeight = FontWeight.SemiBold
-                                    ),
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                                )
+                            // Tombol Delete (hanya muncul saat mode seleksi aktif dan ada item yang dipilih)
+                            if (isSelectionMode && selectedTodos.isNotEmpty()) {
+                                Surface(
+                                    onClick = { showDeleteDialog = true },
+                                    shape = CircleShape,
+                                    color = MaterialTheme.colorScheme.errorContainer,
+                                    modifier = Modifier.size(40.dp)
+                                ) {
+                                    IconButton(
+                                        onClick = { showDeleteDialog = true },
+                                        modifier = Modifier.padding(8.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = "Hapus Terpilih",
+                                            tint = MaterialTheme.colorScheme.error,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
+                }
+
+                // Dialog konfirmasi hapus terpilih
+                if (showDeleteDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showDeleteDialog = false },
+                        title = {
+                            Text(
+                                text = "Hapus Tugas Terpilih?",
+                                style = MaterialTheme.typography.titleLarge
+                            )
+                        },
+                        text = {
+                            Text(
+                                text = "Apakah Anda yakin ingin menghapus ${selectedTodos.size} tugas yang dipilih? Tindakan ini tidak dapat dibatalkan.",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    selectedTodos.forEach { todo ->
+                                        viewModel.deleteTodo(todo)
+                                    }
+                                    selectedTodos = emptySet()
+                                    isSelectionMode = false
+                                    showDeleteDialog = false
+                                },
+                                colors = ButtonDefaults.textButtonColors(
+                                    contentColor = MaterialTheme.colorScheme.error
+                                )
+                            ) {
+                                Text("Hapus")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(
+                                onClick = { showDeleteDialog = false }
+                            ) {
+                                Text("Batal")
+                            }
+                        }
+                    )
                 }
 
                 // Daftar Todo atau tampilan kosong
@@ -418,7 +524,7 @@ fun HomeScreen(
                         onAddClick = onNavigateToAddTodo
                     )
                 } else {
-                    // LazyColumn dengan efek animasi
+                    // LazyColumn dengan efek animasi dan checkbox untuk seleksi
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(
@@ -435,10 +541,10 @@ fun HomeScreen(
                         ) { todo ->
                             val dismissState = rememberDismissState(
                                 confirmValueChange = { value ->
-                                    if (value == DismissValue.DismissedToStart) {
+                                    if (value == DismissValue.DismissedToStart && !isSelectionMode) {
                                         viewModel.deleteTodo(todo)
                                         true
-                                    } else if (value == DismissValue.DismissedToEnd) {
+                                    } else if (value == DismissValue.DismissedToEnd && !isSelectionMode) {
                                         viewModel.toggleTodoCompletion(todo)
                                         false
                                     } else {
@@ -470,15 +576,39 @@ fun HomeScreen(
                                     )
                                 )
                             ) {
-                                SwipeableTodoItem(
-                                    todo = todo,
-                                    categoryColor = priorityColor,
-                                    categoryName = categoryName,
-                                    onCheckedChange = { viewModel.toggleTodoCompletion(it) },
-                                    onEditClick = { onNavigateToEditTodo(it.id) },
-                                    onDeleteClick = { viewModel.deleteTodo(it) },
-                                    dismissState = dismissState
-                                )
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .toggleable(
+                                            value = selectedTodos.contains(todo),
+                                            enabled = isSelectionMode,
+                                            onValueChange = { isSelected ->
+                                                selectedTodos = if (isSelected) {
+                                                    selectedTodos + todo
+                                                } else {
+                                                    selectedTodos - todo
+                                                }
+                                            }
+                                        ),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    if (isSelectionMode) {
+                                        Checkbox(
+                                            checked = selectedTodos.contains(todo),
+                                            onCheckedChange = null, // Ditangani oleh toggleable
+                                            modifier = Modifier.padding(end = 8.dp)
+                                        )
+                                    }
+                                    SwipeableTodoItem(
+                                        todo = todo,
+                                        categoryColor = priorityColor,
+                                        categoryName = categoryName,
+                                        onCheckedChange = { viewModel.toggleTodoCompletion(it) },
+                                        onEditClick = { onNavigateToEditTodo(it.id) },
+                                        onDeleteClick = { viewModel.deleteTodo(it) },
+                                        dismissState = dismissState
+                                    )
+                                }
                             }
                         }
                     }
