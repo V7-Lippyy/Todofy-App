@@ -68,7 +68,7 @@ fun Splash(alpha: Float) {
 
         // Nama aplikasi di bawah logo
         Text(
-            text = "TodoFy",
+            text = "",
             color = MaterialTheme.colorScheme.primary,
             fontSize = 30.sp,
             fontWeight = FontWeight.Bold,
